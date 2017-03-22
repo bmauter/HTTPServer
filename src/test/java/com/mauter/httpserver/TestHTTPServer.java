@@ -1,4 +1,4 @@
-package com.mauter;
+package com.mauter.httpserver;
 
 public class TestHTTPServer {
 
