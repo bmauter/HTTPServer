@@ -1,4 +1,4 @@
-package com.mauter;
+package com.mauter.httpserver;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -81,7 +81,7 @@ public class HTTPRequest implements Serializable {
 	 * @return the body as a String
 	 */
 	public String getBodyAsString() {
-		return new String( this.body, UTF8 );
+		return this.body == null ? null : new String( this.body, UTF8 );
 	}
 	
 	/**

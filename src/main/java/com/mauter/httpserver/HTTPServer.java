@@ -1,4 +1,4 @@
-package com.mauter;
+package com.mauter.httpserver;
 
 import java.io.Closeable;
 import java.io.IOException;
