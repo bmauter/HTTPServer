@@ -151,6 +151,7 @@ public class HTTPRequest implements Serializable {
 		log.debug( "line={}", line );
 		if ( line == null ) throw new IOException( "Invalid HTTP request." );
 		StringTokenizer st = new StringTokenizer( line, " " );
+		if ( st.countTokens() < 3 ) throw new IOException( "Invalid HTTP request." );
 		setMethod( st.nextToken() );
 		setPath( st.nextToken() );
 

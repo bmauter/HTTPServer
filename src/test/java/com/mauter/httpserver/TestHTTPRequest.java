@@ -1,5 +1,7 @@
 package com.mauter.httpserver;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 import org.junit.Assert;
@@ -294,5 +296,23 @@ public class TestHTTPRequest {
 		HTTPRequest request = new HTTPRequest();
 		request.setHeader( "asdf", "qwer" );
 		request.getHeaders().put( "zxcv", "dfgh" );
+	}
+	
+	@Test(expected=NullPointerException.class)
+	public void testReadNullInputStream() throws IOException {
+		HTTPRequest request = new HTTPRequest();
+		request.read( null );
+	}
+	
+	@Test(expected=IOException.class)
+	public void testReadEmptyInputStream() throws IOException {
+		HTTPRequest request = new HTTPRequest();
+		request.read( new ByteArrayInputStream( "".getBytes( "UTF-8" ) ) );
+	}
+	
+	@Test(expected=IOException.class)
+	public void testReadInputStreamOnlyM() throws IOException {
+		HTTPRequest request = new HTTPRequest();
+		request.read( new ByteArrayInputStream( "asdf".getBytes( "UTF-8" ) ) );
 	}
 }
