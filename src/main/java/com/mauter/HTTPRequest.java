@@ -172,9 +172,9 @@ public class HTTPRequest implements Serializable {
 			int contentLength = Integer.parseInt( sContentLength );
 
 			if ( contentLength > 0 ) {
-				char[] body = new char[ contentLength ];
-				reader.read( body, 0, contentLength );
-				setBody( new String( body ) );
+				byte[] body = new byte[ contentLength ];
+				is.read( body, 0, contentLength );
+				setBody( body );
 				log.debug( "body={}", getBody() );
 			}
 		}
