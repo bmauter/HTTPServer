@@ -4,7 +4,7 @@ import java.io.IOException;
 
 /**
  * Handles HTTP requests.  Implement this class and pass it to
- * {@link #setHTTPRequestHandler(HTTPRequestHandler)} so that
+ * {@link HTTPServer#setHTTPRequestHandler(HTTPRequestHandler)} so that
  * you can control what happens based on the request.
  */
 public interface HTTPRequestHandler {
