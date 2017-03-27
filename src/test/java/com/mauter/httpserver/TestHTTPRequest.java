@@ -1,7 +1,5 @@
 package com.mauter.httpserver;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
 import org.junit.Assert;
@@ -91,6 +89,48 @@ public class TestHTTPRequest {
 		HTTPRequest request = new HTTPRequest();
 		request.setPath( "1234" );
 		Assert.assertEquals( "1234", request.path );
+	}
+	
+	@Test
+	public void testGetVersionNull() {
+		HTTPRequest request = new HTTPRequest();
+		request.version = null;
+		Assert.assertNull( request.getVersion() );
+	}
+	
+	@Test
+	public void testGetVersionBlank() {
+		HTTPRequest request = new HTTPRequest();
+		request.version = "";
+		Assert.assertEquals( "", request.getVersion() );
+	}
+	
+	@Test
+	public void testGetVersion() {
+		HTTPRequest request = new HTTPRequest();
+		request.version = "1234";
+		Assert.assertEquals( "1234", request.getVersion() );
+	}
+	
+	@Test
+	public void testSetVersionNull() {
+		HTTPRequest request = new HTTPRequest();
+		request.setVersion( null );
+		Assert.assertNull( request.version );
+	}
+	
+	@Test
+	public void testSetVersionBlank() {
+		HTTPRequest request = new HTTPRequest();
+		request.setVersion( "" );
+		Assert.assertEquals( "", request.version );
+	}
+	
+	@Test
+	public void testSetVersion() {
+		HTTPRequest request = new HTTPRequest();
+		request.setVersion( "1234" );
+		Assert.assertEquals( "1234", request.version );
 	}
 
 	@Test
@@ -296,23 +336,5 @@ public class TestHTTPRequest {
 		HTTPRequest request = new HTTPRequest();
 		request.setHeader( "asdf", "qwer" );
 		request.getHeaders().put( "zxcv", "dfgh" );
-	}
-	
-	@Test(expected=NullPointerException.class)
-	public void testReadNullInputStream() throws IOException {
-		HTTPRequest request = new HTTPRequest();
-		request.read( null );
-	}
-	
-	@Test(expected=IOException.class)
-	public void testReadEmptyInputStream() throws IOException {
-		HTTPRequest request = new HTTPRequest();
-		request.read( new ByteArrayInputStream( "".getBytes( "UTF-8" ) ) );
-	}
-	
-	@Test(expected=IOException.class)
-	public void testReadInputStreamOnlyM() throws IOException {
-		HTTPRequest request = new HTTPRequest();
-		request.read( new ByteArrayInputStream( "asdf".getBytes( "UTF-8" ) ) );
 	}
 }

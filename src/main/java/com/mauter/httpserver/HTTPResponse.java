@@ -1,14 +1,10 @@
 package com.mauter.httpserver;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.nio.charset.Charset;
-import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * This HTTP response object holds the data that is written
@@ -133,25 +129,5 @@ public class HTTPResponse implements Serializable {
 	public Map<String, String> getHeaders() {
 		if ( this.headers == null ) return null;
 		return Collections.unmodifiableMap( this.headers );
-	}
-
-	/**
-	 * Writes this response out to the given OutputStream.
-	 * 
-	 * @param os the OutputStream to write to
-	 * @throws IOException if an I/O error occurs
-	 */
-	public void write( OutputStream os ) throws IOException {
-		os.write( MessageFormat.format( "HTTP/1.0 {0} {1}\n", status, statusMessage ).getBytes( UTF8 ) );
-		if ( headers != null ) {
-			for ( Entry<String, String> header : headers.entrySet() ) {
-				os.write( MessageFormat.format( "{0}: {1}", header.getKey(), header.getValue() ).getBytes( UTF8 ) );
-			}
-		}
-		if ( body != null ) {
-			os.write( "\n".getBytes( UTF8 ) );
-			os.write( body );
-		}
-		os.flush();
 	}
 }

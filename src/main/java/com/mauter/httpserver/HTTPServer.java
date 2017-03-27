@@ -1,13 +1,20 @@
 package com.mauter.httpserver;
 
+import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.Charset;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.StringTokenizer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +29,7 @@ import org.slf4j.LoggerFactory;
 public class HTTPServer implements Runnable, Closeable {
 
 	private static final Logger log = LoggerFactory.getLogger( HTTPServer.class );
+	static final Charset UTF8 = Charset.forName( "UTF-8" );
 
 	Thread thread;
 	ServerSocket serverSocket;
@@ -179,9 +187,9 @@ public class HTTPServer implements Runnable, Closeable {
 				HTTPResponse response = new HTTPResponse();
 				this.responses.add( response );
 
-				request.read( is );
+				read( is, request );
 				this.handler.handleRequest( request, response );
-				response.write( os );
+				write( os, response );
 			}
 			catch ( IOException ioe ) {
 				// only log the exception if we're running.  closing the serverSocket
@@ -189,5 +197,77 @@ public class HTTPServer implements Runnable, Closeable {
 				if ( isRunning ) log.error( "Unable to process request.", ioe );
 			}
 		}
+	}
+	
+	/**
+	 * Reads the given InputStream into the request.
+	 * 
+	 * @param is the InputStream to read
+	 * @param request the HTTPRequest to modify
+	 * @throws IOException If an I/O error occurs
+	 */
+	static void read( InputStream is, HTTPRequest request ) throws IOException {
+		BufferedReader reader = new BufferedReader( new InputStreamReader( is, UTF8 ) );
+
+		// read the first line containing method, path and version
+		String line = reader.readLine();
+		log.debug( "line={}", line );
+		if ( line == null ) throw new IOException( "Invalid HTTP request." );
+		StringTokenizer st = new StringTokenizer( line, " " );
+		if ( st.countTokens() < 3 ) throw new IOException( "Invalid HTTP request." );
+		request.setMethod( st.nextToken() );
+		request.setPath( st.nextToken() );
+		request.setVersion( st.nextToken() );
+
+		// read the headers
+		while ( ( line = reader.readLine() ) != null ) {
+			log.debug( "line={}", line );
+
+			if ( "".equals( line ) ) break;
+
+			int pos = line.indexOf( ": " );
+			if ( pos < 0 ) continue;
+
+			request.setHeader( line.substring( 0, pos ), line.substring( pos + ": ".length() ) );
+		}
+
+		// read the body of the request
+		String sContentLength = request.getHeader( "Content-length" );
+		if ( sContentLength != null && !sContentLength.isEmpty() ) {
+			int contentLength = Integer.parseInt( sContentLength );
+
+			if ( contentLength > 0 ) {
+				byte[] body = new byte[ contentLength ];
+				is.read( body, 0, contentLength );
+				request.setBody( body );
+				log.debug( "body={}", request.getBody() );
+			}
+		}
+	}
+	
+	/**
+	 * Writes the response out to the given OutputStream.
+	 * 
+	 * @param os the OutputStream to write to
+	 * @param response the HTTPResponse to write
+	 * @throws IOException if an I/O error occurs
+	 */
+	static void write( OutputStream os, HTTPResponse response ) throws IOException {
+		os.write( MessageFormat.format( "HTTP/1.0 {0} {1}\n", response.getStatus(), response.getStatusMessage() ).getBytes( UTF8 ) );
+		
+		Map<String, String> headers = response.getHeaders();
+		if ( headers != null ) {
+			for ( Entry<String, String> header : headers.entrySet() ) {
+				os.write( MessageFormat.format( "{0}: {1}", header.getKey(), header.getValue() ).getBytes( UTF8 ) );
+			}
+		}
+		
+		byte[] body = response.getBody();
+		if ( body != null ) {
+			os.write( "\n".getBytes( UTF8 ) );
+			os.write( body );
+		}
+		
+		os.flush();
 	}
 }

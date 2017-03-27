@@ -1,18 +1,10 @@
 package com.mauter.httpserver;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.StringTokenizer;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This HTTP request object holds the data that is read in
@@ -20,11 +12,11 @@ import org.slf4j.LoggerFactory;
  */
 public class HTTPRequest implements Serializable {
 	private static final long serialVersionUID = 1L;
-	private static final Logger log = LoggerFactory.getLogger( HTTPServer.class );
 	static final Charset UTF8 = Charset.forName( "UTF-8" );
-
+	
 	String method;
 	String path;
+	String version;
 	byte[] body;
 	Map<String, String> headers;
 
@@ -62,6 +54,24 @@ public class HTTPRequest implements Serializable {
 	 */
 	public void setPath( String path ) {
 		this.path = path;
+	}
+	
+	/**
+	 * Gets the version of this HTTP request.
+	 * 
+	 * @return the version
+	 */
+	public String getVersion() {
+		return version;
+	}
+	
+	/**
+	 * Sets the version of this HTTP request.
+	 * 
+	 * @param version the version to set
+	 */
+	public void setVersion( String version ) {
+		this.version = version;
 	}
 
 	/**
@@ -135,49 +145,5 @@ public class HTTPRequest implements Serializable {
 	public Map<String, String> getHeaders() {
 		if ( this.headers == null ) return null;
 		return Collections.unmodifiableMap( this.headers );
-	}
-	
-	/**
-	 * Reads the given InputStream into this request.
-	 * 
-	 * @param is the InputStream to read
-	 * @throws IOException If an I/O error occurs
-	 */
-	public void read( InputStream is ) throws IOException {
-		BufferedReader reader = new BufferedReader( new InputStreamReader( is, UTF8 ) );
-
-		// read the first line containing method, path and version
-		String line = reader.readLine();
-		log.debug( "line={}", line );
-		if ( line == null ) throw new IOException( "Invalid HTTP request." );
-		StringTokenizer st = new StringTokenizer( line, " " );
-		if ( st.countTokens() < 3 ) throw new IOException( "Invalid HTTP request." );
-		setMethod( st.nextToken() );
-		setPath( st.nextToken() );
-
-		// read the headers
-		while ( ( line = reader.readLine() ) != null ) {
-			log.debug( "line={}", line );
-
-			if ( "".equals( line ) ) break;
-
-			int pos = line.indexOf( ": " );
-			if ( pos < 0 ) continue;
-
-			setHeader( line.substring( 0, pos ), line.substring( pos + ": ".length() ) );
-		}
-
-		// read the body of the request
-		String sContentLength = getHeader( "Content-length" );
-		if ( sContentLength != null && !sContentLength.isEmpty() ) {
-			int contentLength = Integer.parseInt( sContentLength );
-
-			if ( contentLength > 0 ) {
-				byte[] body = new byte[ contentLength ];
-				is.read( body, 0, contentLength );
-				setBody( body );
-				log.debug( "body={}", getBody() );
-			}
-		}
 	}
 }
