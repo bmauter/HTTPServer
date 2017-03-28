@@ -235,15 +235,29 @@ public class HTTPServer implements Runnable, Closeable {
 		request.setVersion( st.nextToken() );
 
 		// read the headers
+		String header = null, value = null;
 		while ( ( line = readLine( bis ) ) != null ) {
 			log.debug( "line={}", line );
 
 			if ( "".equals( line ) ) break;
 
-			int pos = line.indexOf( ": " );
-			if ( pos < 0 ) continue;
+			int pos = line.indexOf( ":" );
+			
+			if ( pos < 0 ) {
+				if ( header == null ) {
+					throw new IOException( "Invalid HTTP header." );
+				}
+				else {
+					value = request.getHeader( header );
+					value += line.trim();
+				}
+			}
+			else {
+				header = line.substring( 0, pos ).trim();
+				value = line.substring( pos + 1 ).trim();
+			}
 
-			request.setHeader( line.substring( 0, pos ), line.substring( pos + ": ".length() ) );
+			request.setHeader( header, value );
 		}
 
 		// read the body of the request
