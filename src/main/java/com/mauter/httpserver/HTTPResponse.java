@@ -34,8 +34,14 @@ public class HTTPResponse implements Serializable {
 	 */
 	public void setStatus( int status ) {
 		this.status = status;
+		
+		if ( 200 == status ) this.statusMessage = "OK";
+		else if ( 400 == status ) this.statusMessage = "Bad Request";
+		else if ( 404 == status ) this.statusMessage = "Not Found";
+		else if ( 500 == status ) this.statusMessage = "Server Error";
+		else this.statusMessage = status + " Message";
 	}
-
+	
 	/**
 	 * Gets the HTTP status message to be returned to the caller.
 	 * For example, an HTTP 200 will have a status message of "OK".
@@ -139,18 +145,14 @@ public class HTTPResponse implements Serializable {
 	 * @param status the status code
 	 * @param statusMessage the status message
 	 */
-	public void buildStandardResponse( int status, String statusMessage ) {
+	public void buildStandardResponse( int status ) {
 		headers = null;
 		setStatus( status );
-		setStatusMessage( statusMessage );
 		setHeader( "Content-Type", FileType.HTML.mimeType );
 		
 		StringBuilder body = new StringBuilder( 100 );
 		body.append( "<html><body><h1>" );
-		body.append( status );
-		if ( statusMessage != null ) {
-			body.append( " - " ).append( statusMessage );
-		}
+		body.append( status ).append( " - " ).append( statusMessage );
 		body.append( "</h1></body></html>" );
 		
 		setBody( body.toString() );

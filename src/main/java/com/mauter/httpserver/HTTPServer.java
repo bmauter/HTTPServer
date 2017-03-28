@@ -101,7 +101,6 @@ public class HTTPServer implements Runnable, Closeable {
 		server.setHTTPRequestHandler( new HTTPRequestHandler() {
 			@Override public void handleRequest( HTTPRequest request, HTTPResponse response ) throws IOException {
 				response.setStatus( 200 );
-				response.setStatusMessage( "OK" );
 			}
 		} );
 		server.start();
@@ -201,8 +200,16 @@ public class HTTPServer implements Runnable, Closeable {
 				HTTPResponse response = new HTTPResponse();
 				this.responses.add( response );
 
-				read( is, request );
-				this.handler.handleRequest( request, response );
+				try {
+					read( is, request );
+					this.handler.handleRequest( request, response );
+				}
+				catch( HTTPException he ) {
+					response.buildStandardResponse( he.getStatus() );
+				}
+				catch( IOException ioe ) {
+					response.buildStandardResponse( 500 );
+				}
 				write( os, response );
 			}
 			catch ( IOException ioe ) {
@@ -220,15 +227,15 @@ public class HTTPServer implements Runnable, Closeable {
 	 * @param request the HTTPRequest to modify
 	 * @throws IOException If an I/O error occurs
 	 */
-	static void read( InputStream is, HTTPRequest request ) throws IOException {
+	static void read( InputStream is, HTTPRequest request ) throws IOException, HTTPException {
 		BufferedInputStream bis = new BufferedInputStream( is );
 
 		// read the first line containing method, path and version
 		String line = readLine( bis );
 		log.debug( "line={}", line );
-		if ( line == null ) throw new IOException( "Invalid HTTP request." );
+		if ( line == null ) throw new HTTPException( 400, "Invalid HTTP request." );
 		StringTokenizer st = new StringTokenizer( line, " " );
-		if ( st.countTokens() < 3 ) throw new IOException( "Invalid HTTP request." );
+		if ( st.countTokens() < 3 ) throw new HTTPException( 400, "Invalid HTTP request." );
 		request.setMethod( st.nextToken() );
 		request.setPath( st.nextToken() );
 		request.setVersion( st.nextToken() );
@@ -244,7 +251,7 @@ public class HTTPServer implements Runnable, Closeable {
 			
 			if ( pos < 0 ) {
 				if ( header == null ) {
-					throw new IOException( "Invalid HTTP header." );
+					throw new HTTPException( 400, "Invalid HTTP header." );
 				}
 				else {
 					value = request.getHeader( header );

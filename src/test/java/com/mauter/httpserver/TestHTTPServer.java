@@ -239,32 +239,32 @@ public class TestHTTPServer {
 	}
 
 	@Test(expected=IOException.class)
-	public void testReadNull() throws IOException {
+	public void testReadNull() throws IOException, HTTPException {
 		HTTPServer.read( null, null );
 	}
 	
 	@Test(expected=IOException.class)
-	public void testReadNullInputStream() throws IOException {
+	public void testReadNullInputStream() throws IOException, HTTPException {
 		HTTPServer.read( null, new HTTPRequest() );
 	}
 	
 	@Test(expected=NullPointerException.class)
-	public void testReadNullRequest() throws IOException {
+	public void testReadNullRequest() throws IOException, HTTPException {
 		HTTPServer.read( buildRequest( null, null ), null );
 	}
 	
-	@Test(expected=IOException.class)
-	public void testReadEmptyInputStream() throws IOException {
+	@Test(expected=HTTPException.class)
+	public void testReadEmptyInputStream() throws IOException, HTTPException {
 		HTTPServer.read( new ByteArrayInputStream( "".getBytes( "UTF-8" ) ), new HTTPRequest() );
 	}
 	
-	@Test(expected=IOException.class)
-	public void testReadBadInputStream() throws IOException {
+	@Test(expected=HTTPException.class)
+	public void testReadBadInputStream() throws IOException, HTTPException {
 		HTTPServer.read( new ByteArrayInputStream( "bad".getBytes( "UTF-8" ) ), new HTTPRequest() );
 	}
 	
 	@Test
-	public void testReadInputStreamOnlyInitialLine() throws IOException {
+	public void testReadInputStreamOnlyInitialLine() throws IOException, HTTPException {
 		HTTPRequest request = new HTTPRequest();
 		HTTPServer.read( buildRequest( null, null ), request );
 		Assert.assertEquals( "GET", request.getMethod() );
@@ -273,7 +273,7 @@ public class TestHTTPServer {
 	}
 	
 	@Test
-	public void testReadInputStreamWithHeaders() throws IOException {
+	public void testReadInputStreamWithHeaders() throws IOException, HTTPException {
 		Map<String, String> headers = new HashMap<>();
 		headers.put( "Host", "localhost:8080" );
 		headers.put( "From", "brianmauter@gmail.com" );
@@ -291,7 +291,7 @@ public class TestHTTPServer {
 	}
 	
 	@Test
-	public void testReadInputStreamWithHeadersBody() throws IOException {
+	public void testReadInputStreamWithHeadersBody() throws IOException, HTTPException {
 		Map<String, String> headers = new HashMap<>();
 		headers.put( "Host", "localhost:8080" );
 		headers.put( "From", "brianmauter@gmail.com" );

@@ -19,6 +19,7 @@ public interface HTTPRequestHandler {
 	 * @param response the HTTPResponse that will be written to the
 	 * socket's OutputStream
 	 * @throws IOException if an I/O error occurs
+	 * @throws HTTPException if an error occurs outside of I/O
 	 */
-	public void handleRequest( HTTPRequest request, HTTPResponse response ) throws IOException;
+	public void handleRequest( HTTPRequest request, HTTPResponse response ) throws IOException, HTTPException;
 }

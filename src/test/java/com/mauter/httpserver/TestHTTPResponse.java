@@ -277,10 +277,10 @@ public class TestHTTPResponse {
 	@Test
 	public void testBuildStandardResponseNoMessage() {
 		HTTPResponse response = new HTTPResponse();
-		response.buildStandardResponse( 111, null );
+		response.buildStandardResponse( 111 );
 		Assert.assertEquals( 111, response.status );
-		Assert.assertNull( response.statusMessage );
+		Assert.assertEquals( "111 Message", response.statusMessage );
 		Assert.assertEquals( FileType.HTML.mimeType, response.getHeader( "Content-Type" ) );
-		Assert.assertEquals( "<html><body><h1>111</h1></body></html>", response.getBodyAsString() );
+		Assert.assertEquals( "<html><body><h1>111 - 111 Message</h1></body></html>", response.getBodyAsString() );
 	}
 }
