@@ -1,11 +1,14 @@
 package com.mauter.httpserver;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -14,42 +17,165 @@ public class TestHTTPServer {
 	
 	static final Charset UTF8 = Charset.forName( "UTF-8" );
 	
-	InputStream buildSimpleRequest() throws IOException {
+	InputStream buildRequest( Map<String, String> headers, byte[] body ) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		PrintWriter writer = new PrintWriter( baos );
-		writer.println( "GET / HTTP/1.0" );
-		writer.flush();
+		baos.write( "GET / HTTP/1.0\n".getBytes( UTF8 ) );
+		
+		if ( body != null ) {
+			if ( headers == null ) {
+				headers = new HashMap<>( 1 );
+			}
+			headers.put( "Content-Length", String.valueOf( body.length ) );
+		}
+		
+		if ( headers != null ) {
+			for ( Entry<String, String> entry : headers.entrySet() ) {
+				baos.write( ( entry.getKey() + ": " + entry.getValue() + "\n" ).getBytes( UTF8 ) );
+			}
+		}
+		
+		if ( body != null ) {
+			baos.write( "\n".getBytes( UTF8 ) );
+			baos.write( body );
+		}
+		
 		return new ByteArrayInputStream( baos.toByteArray() );
 	}
-
+	
 	@Test(expected=NullPointerException.class)
+	public void testReadLineNull() throws IOException {
+		HTTPServer.readLine( null );
+	}
+	
+	@Test
+	public void testReadLineEmpty() throws IOException {
+		Assert.assertEquals( "", testReadLine( "" ) );
+	}
+	
+	@Test
+	public void testReadLineOneLine() throws IOException {
+		Assert.assertEquals( "one line", testReadLine( "one line" ) );
+	}
+	
+	@Test
+	public void testReadLineTwoLines() throws IOException {
+		String test = "first line\nsecond line";
+		ByteArrayInputStream bais = new ByteArrayInputStream( test.getBytes( UTF8 ) );
+		BufferedInputStream bis = new BufferedInputStream( bais );
+		Assert.assertEquals( "first line", HTTPServer.readLine( bis ) );
+		Assert.assertEquals( "second line", HTTPServer.readLine( bis ) );
+	}
+
+	@Test
+	public void testReadLine() throws IOException {
+		String test = "first line\nsecond line\n\nfourth line";
+		ByteArrayInputStream bais = new ByteArrayInputStream( test.getBytes( UTF8 ) );
+		BufferedInputStream bis = new BufferedInputStream( bais );
+		Assert.assertEquals( "first line", HTTPServer.readLine( bis ) );
+		Assert.assertEquals( "second line", HTTPServer.readLine( bis ) );
+		Assert.assertEquals( "", HTTPServer.readLine( bis ) );
+		Assert.assertEquals( "fourth line", HTTPServer.readLine( bis ) );
+	}
+	
+	@Test
+	public void testReadLineTwoLinesCRLF() throws IOException {
+		String test = "first line\r\nsecond line";
+		ByteArrayInputStream bais = new ByteArrayInputStream( test.getBytes( UTF8 ) );
+		BufferedInputStream bis = new BufferedInputStream( bais );
+		Assert.assertEquals( "first line", HTTPServer.readLine( bis ) );
+		Assert.assertEquals( "second line", HTTPServer.readLine( bis ) );
+	}
+	
+	@Test
+	public void testReadLineCRLF() throws IOException {
+		String test = "first line\r\nsecond line\r\n\r\nfourth line";
+		ByteArrayInputStream bais = new ByteArrayInputStream( test.getBytes( UTF8 ) );
+		BufferedInputStream bis = new BufferedInputStream( bais );
+		Assert.assertEquals( "first line", HTTPServer.readLine( bis ) );
+		Assert.assertEquals( "second line", HTTPServer.readLine( bis ) );
+		Assert.assertEquals( "", HTTPServer.readLine( bis ) );
+		Assert.assertEquals( "fourth line", HTTPServer.readLine( bis ) );
+	}
+	
+	String testReadLine( String test ) throws IOException {
+		return HTTPServer.readLine( new BufferedInputStream(
+				new ByteArrayInputStream( test == null ? null : test.getBytes( UTF8 ) ) ) );
+	}
+
+	@Test(expected=IOException.class)
 	public void testReadNull() throws IOException {
 		HTTPServer.read( null, null );
 	}
 	
-	@Test(expected=NullPointerException.class)
+	@Test(expected=IOException.class)
 	public void testReadNullInputStream() throws IOException {
 		HTTPServer.read( null, new HTTPRequest() );
 	}
 	
 	@Test(expected=NullPointerException.class)
 	public void testReadNullRequest() throws IOException {
-		HTTPServer.read( new ByteArrayInputStream( "GET / HTTP/1.0\r\n".getBytes( UTF8 ) ), null );
+		HTTPServer.read( buildRequest( null, null ), null );
 	}
 	
 	@Test(expected=IOException.class)
 	public void testReadEmptyInputStream() throws IOException {
-		HTTPRequest request = new HTTPRequest();
-		HTTPServer.read( new ByteArrayInputStream( "".getBytes( "UTF-8" ) ), request );
+		HTTPServer.read( new ByteArrayInputStream( "".getBytes( "UTF-8" ) ), new HTTPRequest() );
+	}
+	
+	@Test(expected=IOException.class)
+	public void testReadBadInputStream() throws IOException {
+		HTTPServer.read( new ByteArrayInputStream( "bad".getBytes( "UTF-8" ) ), new HTTPRequest() );
 	}
 	
 	@Test
 	public void testReadInputStreamOnlyInitialLine() throws IOException {
 		HTTPRequest request = new HTTPRequest();
-		HTTPServer.read( buildSimpleRequest(), request );
+		HTTPServer.read( buildRequest( null, null ), request );
 		Assert.assertEquals( "GET", request.getMethod() );
 		Assert.assertEquals( "/", request.getPath() );
 		Assert.assertEquals( "HTTP/1.0", request.getVersion() );
+	}
+	
+	@Test
+	public void testReadInputStreamWithHeaders() throws IOException {
+		Map<String, String> headers = new HashMap<>();
+		headers.put( "Host", "localhost:8080" );
+		headers.put( "From", "brianmauter@gmail.com" );
+		headers.put( "X-blahblahblah", "more blah" );
+		
+		HTTPRequest request = new HTTPRequest();
+		HTTPServer.read( buildRequest( headers, null ), request );
+		Assert.assertEquals( "GET", request.getMethod() );
+		Assert.assertEquals( "/", request.getPath() );
+		Assert.assertEquals( "HTTP/1.0", request.getVersion() );
+		Assert.assertEquals( headers.size(), request.getHeaders().size() );
+		Assert.assertEquals( "localhost:8080", request.getHeader( "Host" ) );
+		Assert.assertEquals( "brianmauter@gmail.com", request.getHeader( "From" ) );
+		Assert.assertEquals( "more blah", request.getHeader( "X-blahblahblah" ) );
+	}
+	
+	@Test
+	public void testReadInputStreamWithHeadersBody() throws IOException {
+		Map<String, String> headers = new HashMap<>();
+		headers.put( "Host", "localhost:8080" );
+		headers.put( "From", "brianmauter@gmail.com" );
+		headers.put( "X-blahblahblah", "more blah" );
+		headers.put( "Content-Length", "1" );
+		
+		byte[] body = "Squirrel!".getBytes( UTF8 );
+		
+		HTTPRequest request = new HTTPRequest();
+		HTTPServer.read( buildRequest( headers, body ), request );
+		Assert.assertEquals( "GET", request.getMethod() );
+		Assert.assertEquals( "/", request.getPath() );
+		Assert.assertEquals( "HTTP/1.0", request.getVersion() );
+		Assert.assertEquals( headers.size(), request.getHeaders().size() );
+		Assert.assertEquals( "localhost:8080", request.getHeader( "Host" ) );
+		Assert.assertEquals( "brianmauter@gmail.com", request.getHeader( "From" ) );
+		Assert.assertEquals( "more blah", request.getHeader( "X-blahblahblah" ) );
+		Assert.assertEquals( String.valueOf( body.length ), request.getHeader( "Content-Length" ) );
+		Assert.assertArrayEquals( body, request.getBody() );
+		Assert.assertEquals( new String( body, UTF8 ), request.getBodyAsString() );
 	}
 	
 }

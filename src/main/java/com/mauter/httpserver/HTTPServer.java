@@ -1,10 +1,10 @@
 package com.mauter.httpserver;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -207,10 +207,10 @@ public class HTTPServer implements Runnable, Closeable {
 	 * @throws IOException If an I/O error occurs
 	 */
 	static void read( InputStream is, HTTPRequest request ) throws IOException {
-		BufferedReader reader = new BufferedReader( new InputStreamReader( is, UTF8 ) );
+		BufferedInputStream bis = new BufferedInputStream( is );
 
 		// read the first line containing method, path and version
-		String line = reader.readLine();
+		String line = readLine( bis );
 		log.debug( "line={}", line );
 		if ( line == null ) throw new IOException( "Invalid HTTP request." );
 		StringTokenizer st = new StringTokenizer( line, " " );
@@ -220,7 +220,7 @@ public class HTTPServer implements Runnable, Closeable {
 		request.setVersion( st.nextToken() );
 
 		// read the headers
-		while ( ( line = reader.readLine() ) != null ) {
+		while ( ( line = readLine( bis ) ) != null ) {
 			log.debug( "line={}", line );
 
 			if ( "".equals( line ) ) break;
@@ -238,11 +238,37 @@ public class HTTPServer implements Runnable, Closeable {
 
 			if ( contentLength > 0 ) {
 				byte[] body = new byte[ contentLength ];
-				is.read( body, 0, contentLength );
+				bis.read( body, 0, contentLength );
 				request.setBody( body );
 				log.debug( "body={}", request.getBody() );
 			}
 		}
+	}
+	
+	static String readLine( BufferedInputStream bis ) throws IOException {
+		ByteArrayOutputStream line = new ByteArrayOutputStream();
+		
+		int b;
+		while( ( b = bis.read() ) >= 0 ) {
+			if ( b == '\n' || b == '\r' ) {
+				
+				// check for two character line endings (LF vs CRLF)
+				bis.mark( 0 );
+				int b2 = bis.read();
+				
+				// do we want to keep the second character?
+				// keep it if it's the same line ending character as the first character
+				// or if it's different, only if it's not another line ending character
+				if ( b == b2 || ( b2 != '\n' && b2 != '\r' ) ) {
+					bis.reset();
+				}
+				break;
+			}
+			else {
+				line.write( b );
+			}
+		}
+		return line.toString( UTF8.name() );
 	}
 	
 	/**
