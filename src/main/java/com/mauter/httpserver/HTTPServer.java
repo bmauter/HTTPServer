@@ -4,7 +4,6 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -13,6 +12,7 @@ import java.net.Socket;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -35,7 +35,7 @@ public class HTTPServer implements Runnable, Closeable {
 
 	Thread thread;
 	ServerSocket serverSocket;
-	boolean isRunning = true;
+	boolean isRunning = false;
 
 	int port = 0;
 	List<HTTPRequest> requests = new ArrayList<>();
@@ -66,7 +66,7 @@ public class HTTPServer implements Runnable, Closeable {
 	 * 
 	 * @return the List of HTTPRequest objects
 	 */
-	public List<HTTPRequest> getRequests() { return this.requests; }
+	public List<HTTPRequest> getRequests() { return Collections.unmodifiableList( this.requests ); }
 	
 	/**
 	 * Gets the list of responses that have been returned since startup
@@ -74,7 +74,7 @@ public class HTTPServer implements Runnable, Closeable {
 	 * 
 	 * @return the List of HTTPResponse objects
 	 */
-	public List<HTTPResponse> getResponses() { return this.responses; }
+	public List<HTTPResponse> getResponses() { return Collections.unmodifiableList( this.responses ); }
 
 	/**
 	 * Gets the request handler used by the server to handle requests.
@@ -115,42 +115,9 @@ public class HTTPServer implements Runnable, Closeable {
 	 * @return a new HTTPServer that's already started and listening for requests
 	 * @throws IOException if an I/O error occurs when opening the socket
 	 */
-	public static HTTPServer simpleServer( final File root ) throws IOException {
-		if ( root == null ) throw new NullPointerException( "Root directory cannot be null." );
-		if ( !root.exists() ) throw new IOException( "Root directory does not exist." );
-		if ( !root.isDirectory() ) throw new IOException( "Root must be a directory." );
-		
-		final HTTPServer server = new HTTPServer();
-		server.setHTTPRequestHandler( new HTTPRequestHandler() {
-			@Override public void handleRequest( HTTPRequest request, HTTPResponse response ) throws IOException {
-				String path = request.getPath();
-				if ( "/".equals( path ) ) path = "index.html";
-				
-				response.setHeader( "Server", server.getClass().getSimpleName()
-						+ "/" + server.getClass().getPackage().getImplementationVersion() );
-				
-				File file = new File( root, path );
-				if ( !file.exists() ) {
-					response.setStatus( 404 );
-					response.setStatusMessage( "Not Found" );
-					return;
-				}
-				
-				try ( FileInputStream fis = new FileInputStream( file ) ) {
-					ByteArrayOutputStream body = new ByteArrayOutputStream();
-					byte[] buffer = new byte[ 1024 ];
-					int c;
-					while( ( c = fis.read( buffer, 0, buffer.length ) ) > 0 ) {
-						body.write( buffer, 0, c );
-					}
-					response.setStatus( 200 );
-					response.setStatusMessage( "OK" );
-					response.setHeader( "Content-Type", "application/octet-stream" );
-					response.setBody( body.toByteArray() );
-				}
-			}
-		} );
-		
+	public static HTTPServer simpleServer( File root ) throws IOException {
+		HTTPServer server = new HTTPServer();
+		server.setHTTPRequestHandler( new SimpleFileServer( root ) );
 		server.start();
 		return server;
 	}
@@ -327,18 +294,18 @@ public class HTTPServer implements Runnable, Closeable {
 	 * @throws IOException if an I/O error occurs
 	 */
 	static void write( OutputStream os, HTTPResponse response ) throws IOException {
-		os.write( MessageFormat.format( "HTTP/1.0 {0} {1}\n", response.getStatus(), response.getStatusMessage() ).getBytes( UTF8 ) );
+		os.write( MessageFormat.format( "HTTP/1.0 {0} {1}\r\n", response.getStatus(), response.getStatusMessage() ).getBytes( UTF8 ) );
 		
 		Map<String, String> headers = response.getHeaders();
 		if ( headers != null ) {
 			for ( Entry<String, String> header : headers.entrySet() ) {
-				os.write( MessageFormat.format( "{0}: {1}", header.getKey(), header.getValue() ).getBytes( UTF8 ) );
+				os.write( MessageFormat.format( "{0}: {1}\r\n", header.getKey(), header.getValue() ).getBytes( UTF8 ) );
 			}
 		}
 		
 		byte[] body = response.getBody();
 		if ( body != null ) {
-			os.write( "\n".getBytes( UTF8 ) );
+			os.write( "\r\n".getBytes( UTF8 ) );
 			os.write( body );
 		}
 		

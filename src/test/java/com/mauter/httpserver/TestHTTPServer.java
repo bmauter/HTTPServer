@@ -5,8 +5,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -40,6 +43,141 @@ public class TestHTTPServer {
 		}
 		
 		return new ByteArrayInputStream( baos.toByteArray() );
+	}
+	
+	@Test
+	public void testGetPortUnset() {
+		try ( HTTPServer server = new HTTPServer() ) {
+			Assert.assertEquals( 0, server.getPort() ); 
+		}
+	}
+	
+	@Test
+	public void testGetPortSet() {
+		try ( HTTPServer server = new HTTPServer() ) {
+			server.setPort( 1234 );
+			Assert.assertEquals( 1234, server.getPort() ); 
+		}
+	}
+	
+	@Test
+	public void testGetPortUnsetThenStart() throws IOException {
+		try ( HTTPServer server = HTTPServer.always200OK() ) {
+			Assert.assertFalse( server.getPort() == 0 ); 
+		}
+	}
+	
+	@Test
+	public void testGetPortSetThenStart() throws IOException {
+		try ( HTTPServer server = new HTTPServer() ) {
+			server.setPort( 1234 );
+			server.start();
+			Assert.assertEquals( 1234, server.getPort() ); 
+		}
+	}
+	
+	@Test
+	public void testGetRequestsUnset() {
+		try ( HTTPServer server = new HTTPServer() ) {
+			Assert.assertNotNull( server.getRequests() ); 
+			Assert.assertTrue( server.getRequests().isEmpty() ); 
+		}
+	}
+	
+	@Test
+	public void testGetRequests() throws IOException {
+		try ( HTTPServer server = HTTPServer.always200OK() ) {
+			
+			URL url = new URL( "http://localhost:" + server.getPort() );
+			HttpURLConnection con = (HttpURLConnection)url.openConnection();
+			con.addRequestProperty( "1234", "5678" );
+			con.connect();
+			con.getResponseCode();
+			con.disconnect();
+			
+			List<HTTPRequest> requests = server.getRequests();
+			
+			Assert.assertNotNull( requests ); 
+			Assert.assertEquals( 1, requests.size() );
+			
+			HTTPRequest request = requests.get( 0 );
+			Assert.assertEquals( "5678", request.getHeader( "1234" ) );
+		}
+	}
+	
+	@Test
+	public void testGetResponsesUnset() {
+		try ( HTTPServer server = new HTTPServer() ) {
+			Assert.assertNotNull( server.getResponses() ); 
+			Assert.assertTrue( server.getResponses().isEmpty() ); 
+		}
+	}
+	
+	@Test
+	public void testGetResponses() throws IOException {
+		try ( HTTPServer server = HTTPServer.always200OK() ) {
+			
+			URL url = new URL( "http://localhost:" + server.getPort() );
+			HttpURLConnection con = (HttpURLConnection)url.openConnection();
+			con.connect();
+			con.getResponseCode();
+			con.disconnect();
+			
+			List<HTTPResponse> responses = server.getResponses();
+			
+			Assert.assertNotNull( responses ); 
+			Assert.assertEquals( 1, responses.size() );
+			
+			HTTPResponse response = responses.get( 0 );
+			Assert.assertEquals( 200, response.getStatus() );
+		}
+	}
+	
+	@Test
+	public void testGetHTTPRequestHandlerUnset() {
+		try ( HTTPServer server = new HTTPServer() ) {
+			Assert.assertNull( server.getHTTPRequestHandler() );
+		}
+	}
+
+	@Test
+	public void testGetHTTPRequestHandlerNull() {
+		try ( HTTPServer server = new HTTPServer() ) {
+			server.handler = null;
+			Assert.assertNull( server.getHTTPRequestHandler() );
+		}
+	}
+	
+	@Test
+	public void testGetHTTPRequestHandler() {
+		HTTPRequestHandler handler = new HTTPRequestHandler() {
+			@Override public void handleRequest( HTTPRequest request, HTTPResponse response ) throws IOException {}
+		};
+		
+		try ( HTTPServer server = new HTTPServer() ) {
+			server.handler = handler;
+			Assert.assertEquals( handler, server.getHTTPRequestHandler() );
+		}
+	}
+	
+	@Test
+	public void testSetHTTPRequestHandlerNull() {
+		try ( HTTPServer server = new HTTPServer() ) {
+			server.setHTTPRequestHandler( null );
+			Assert.assertNull( server.handler );
+		}
+	}
+
+	@Test
+	public void testSetHTTPRequestHandler() {
+		HTTPRequestHandler handler = new HTTPRequestHandler() {
+			@Override public void handleRequest( HTTPRequest request, HTTPResponse response ) throws IOException {}
+		};
+		
+		try ( HTTPServer server = new HTTPServer() ) {
+			server.setHTTPRequestHandler( handler );
+			Assert.assertEquals( handler, server.handler );
+		}
 	}
 	
 	@Test(expected=NullPointerException.class)
