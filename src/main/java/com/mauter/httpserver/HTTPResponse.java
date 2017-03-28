@@ -1,7 +1,7 @@
 package com.mauter.httpserver;
 
 import java.io.Serializable;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,7 +12,6 @@ import java.util.Map;
  */
 public class HTTPResponse implements Serializable {
 	private static final long serialVersionUID = 1L;
-	static final Charset UTF8 = Charset.forName( "UTF-8" );
 	
 	int status;
 	String statusMessage;
@@ -75,7 +74,7 @@ public class HTTPResponse implements Serializable {
 	 * @return the body as a String
 	 */
 	public String getBodyAsString() {
-		return this.body == null ? null : new String( this.body, UTF8 );
+		return this.body == null ? null : new String( this.body, StandardCharsets.UTF_8 );
 	}
 	
 	/**
@@ -95,7 +94,7 @@ public class HTTPResponse implements Serializable {
 	 * @param body the String to set as the body
 	 */
 	public void setBody( String body ) {
-		setBody( body == null ? null : body.getBytes( UTF8 ) );
+		setBody( body == null ? null : body.getBytes( StandardCharsets.UTF_8 ) );
 	}
 
 	/**

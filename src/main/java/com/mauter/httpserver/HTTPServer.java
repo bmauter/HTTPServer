@@ -9,7 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 public class HTTPServer implements Runnable, Closeable {
 
 	private static final Logger log = LoggerFactory.getLogger( HTTPServer.class );
-	static final Charset UTF8 = Charset.forName( "UTF-8" );
 
 	Thread thread;
 	ServerSocket serverSocket;
@@ -297,7 +296,7 @@ public class HTTPServer implements Runnable, Closeable {
 				line.write( b );
 			}
 		}
-		return line.toString( UTF8.name() );
+		return line.toString( StandardCharsets.UTF_8.name() );
 	}
 	
 	/**
@@ -308,18 +307,18 @@ public class HTTPServer implements Runnable, Closeable {
 	 * @throws IOException if an I/O error occurs
 	 */
 	static void write( OutputStream os, HTTPResponse response ) throws IOException {
-		os.write( MessageFormat.format( "HTTP/1.0 {0} {1}\r\n", response.getStatus(), response.getStatusMessage() ).getBytes( UTF8 ) );
+		os.write( MessageFormat.format( "HTTP/1.0 {0} {1}\r\n", response.getStatus(), response.getStatusMessage() ).getBytes( StandardCharsets.UTF_8 ) );
 		
 		Map<String, String> headers = response.getHeaders();
 		if ( headers != null ) {
 			for ( Entry<String, String> header : headers.entrySet() ) {
-				os.write( MessageFormat.format( "{0}: {1}\r\n", header.getKey(), header.getValue() ).getBytes( UTF8 ) );
+				os.write( MessageFormat.format( "{0}: {1}\r\n", header.getKey(), header.getValue() ).getBytes( StandardCharsets.UTF_8 ) );
 			}
 		}
 		
 		byte[] body = response.getBody();
 		if ( body != null ) {
-			os.write( "\r\n".getBytes( UTF8 ) );
+			os.write( "\r\n".getBytes( StandardCharsets.UTF_8 ) );
 			os.write( body );
 		}
 		

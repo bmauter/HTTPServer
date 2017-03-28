@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,11 +18,9 @@ import org.junit.Test;
 
 public class TestHTTPServer {
 	
-	static final Charset UTF8 = Charset.forName( "UTF-8" );
-	
 	InputStream buildRequest( Map<String, String> headers, byte[] body ) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		baos.write( "GET / HTTP/1.0\n".getBytes( UTF8 ) );
+		baos.write( "GET / HTTP/1.0\n".getBytes( StandardCharsets.UTF_8 ) );
 		
 		if ( body != null ) {
 			if ( headers == null ) {
@@ -33,12 +31,12 @@ public class TestHTTPServer {
 		
 		if ( headers != null ) {
 			for ( Entry<String, String> entry : headers.entrySet() ) {
-				baos.write( ( entry.getKey() + ": " + entry.getValue() + "\n" ).getBytes( UTF8 ) );
+				baos.write( ( entry.getKey() + ": " + entry.getValue() + "\n" ).getBytes( StandardCharsets.UTF_8 ) );
 			}
 		}
 		
 		if ( body != null ) {
-			baos.write( "\n".getBytes( UTF8 ) );
+			baos.write( "\n".getBytes( StandardCharsets.UTF_8 ) );
 			baos.write( body );
 		}
 		
@@ -198,7 +196,7 @@ public class TestHTTPServer {
 	@Test
 	public void testReadLineTwoLines() throws IOException {
 		String test = "first line\nsecond line";
-		ByteArrayInputStream bais = new ByteArrayInputStream( test.getBytes( UTF8 ) );
+		ByteArrayInputStream bais = new ByteArrayInputStream( test.getBytes( StandardCharsets.UTF_8 ) );
 		BufferedInputStream bis = new BufferedInputStream( bais );
 		Assert.assertEquals( "first line", HTTPServer.readLine( bis ) );
 		Assert.assertEquals( "second line", HTTPServer.readLine( bis ) );
@@ -207,7 +205,7 @@ public class TestHTTPServer {
 	@Test
 	public void testReadLine() throws IOException {
 		String test = "first line\nsecond line\n\nfourth line";
-		ByteArrayInputStream bais = new ByteArrayInputStream( test.getBytes( UTF8 ) );
+		ByteArrayInputStream bais = new ByteArrayInputStream( test.getBytes( StandardCharsets.UTF_8 ) );
 		BufferedInputStream bis = new BufferedInputStream( bais );
 		Assert.assertEquals( "first line", HTTPServer.readLine( bis ) );
 		Assert.assertEquals( "second line", HTTPServer.readLine( bis ) );
@@ -218,7 +216,7 @@ public class TestHTTPServer {
 	@Test
 	public void testReadLineTwoLinesCRLF() throws IOException {
 		String test = "first line\r\nsecond line";
-		ByteArrayInputStream bais = new ByteArrayInputStream( test.getBytes( UTF8 ) );
+		ByteArrayInputStream bais = new ByteArrayInputStream( test.getBytes( StandardCharsets.UTF_8 ) );
 		BufferedInputStream bis = new BufferedInputStream( bais );
 		Assert.assertEquals( "first line", HTTPServer.readLine( bis ) );
 		Assert.assertEquals( "second line", HTTPServer.readLine( bis ) );
@@ -227,7 +225,7 @@ public class TestHTTPServer {
 	@Test
 	public void testReadLineCRLF() throws IOException {
 		String test = "first line\r\nsecond line\r\n\r\nfourth line";
-		ByteArrayInputStream bais = new ByteArrayInputStream( test.getBytes( UTF8 ) );
+		ByteArrayInputStream bais = new ByteArrayInputStream( test.getBytes( StandardCharsets.UTF_8 ) );
 		BufferedInputStream bis = new BufferedInputStream( bais );
 		Assert.assertEquals( "first line", HTTPServer.readLine( bis ) );
 		Assert.assertEquals( "second line", HTTPServer.readLine( bis ) );
@@ -237,7 +235,7 @@ public class TestHTTPServer {
 	
 	String testReadLine( String test ) throws IOException {
 		return HTTPServer.readLine( new BufferedInputStream(
-				new ByteArrayInputStream( test == null ? null : test.getBytes( UTF8 ) ) ) );
+				new ByteArrayInputStream( test == null ? null : test.getBytes( StandardCharsets.UTF_8 ) ) ) );
 	}
 
 	@Test(expected=IOException.class)
@@ -300,7 +298,7 @@ public class TestHTTPServer {
 		headers.put( "X-blahblahblah", "more blah" );
 		headers.put( "Content-Length", "1" );
 		
-		byte[] body = "Squirrel!".getBytes( UTF8 );
+		byte[] body = "Squirrel!".getBytes( StandardCharsets.UTF_8 );
 		
 		HTTPRequest request = new HTTPRequest();
 		HTTPServer.read( buildRequest( headers, body ), request );
@@ -313,7 +311,7 @@ public class TestHTTPServer {
 		Assert.assertEquals( "more blah", request.getHeader( "X-blahblahblah" ) );
 		Assert.assertEquals( String.valueOf( body.length ), request.getHeader( "Content-Length" ) );
 		Assert.assertArrayEquals( body, request.getBody() );
-		Assert.assertEquals( new String( body, UTF8 ), request.getBodyAsString() );
+		Assert.assertEquals( new String( body, StandardCharsets.UTF_8 ), request.getBodyAsString() );
 	}
 	
 }
