@@ -27,8 +27,7 @@ public class SimpleFileServer implements HTTPRequestHandler {
 		
 		File file = new File( root, path );
 		if ( !file.exists() ) {
-			response.setStatus( 404 );
-			response.setStatusMessage( "Not Found" );
+			response.buildStandardResponse( 404 );
 			return;
 		}
 		
@@ -41,8 +40,9 @@ public class SimpleFileServer implements HTTPRequestHandler {
 			}
 			response.setStatus( 200 );
 			response.setStatusMessage( "OK" );
-			response.setHeader( "Content-Type", "application/octet-stream" );
 			response.setBody( body.toByteArray() );
+			response.setHeader( "Content-Type", FileType.detect( response.getBody() ).mimeType );
 		}
 	}
+	
 }
