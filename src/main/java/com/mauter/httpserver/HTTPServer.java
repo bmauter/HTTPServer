@@ -3,6 +3,8 @@ package com.mauter.httpserver;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -103,6 +105,50 @@ public class HTTPServer implements Runnable, Closeable {
 				response.setStatusMessage( "OK" );
 			}
 		} );
+		server.start();
+		return server;
+	}
+	
+	/**
+	 * Creates and starts a server that serves files out of the given root directory.
+	 * 
+	 * @return a new HTTPServer that's already started and listening for requests
+	 * @throws IOException if an I/O error occurs when opening the socket
+	 */
+	public static HTTPServer simpleServer( final File root ) throws IOException {
+		if ( root == null ) throw new NullPointerException( "Root directory cannot be null." );
+		
+		final HTTPServer server = new HTTPServer();
+		server.setHTTPRequestHandler( new HTTPRequestHandler() {
+			@Override public void handleRequest( HTTPRequest request, HTTPResponse response ) throws IOException {
+				String path = request.getPath();
+				if ( "/".equals( path ) ) path = "index.html";
+				
+				response.setHeader( "Server", server.getClass().getSimpleName()
+						+ "/" + server.getClass().getPackage().getImplementationVersion() );
+				
+				File file = new File( root, path );
+				if ( !file.exists() ) {
+					response.setStatus( 404 );
+					response.setStatusMessage( "Not Found" );
+					return;
+				}
+				
+				try ( FileInputStream fis = new FileInputStream( file ) ) {
+					ByteArrayOutputStream body = new ByteArrayOutputStream();
+					byte[] buffer = new byte[ 1024 ];
+					int c;
+					while( ( c = fis.read( buffer, 0, buffer.length ) ) > 0 ) {
+						body.write( buffer, 0, c );
+					}
+					response.setStatus( 200 );
+					response.setStatusMessage( "OK" );
+					response.setHeader( "Content-Type", "application/octet-stream" );
+					response.setBody( body.toByteArray() );
+				}
+			}
+		} );
+		
 		server.start();
 		return server;
 	}
