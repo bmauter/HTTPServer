@@ -324,4 +324,31 @@ public class HTTPServer implements Runnable, Closeable {
 		
 		os.flush();
 	}
+	
+	public static void main( String[] args ) throws Exception {
+
+		File root = new File( System.getProperty( "user.dir" ) );
+		int port = 0;
+		
+		if ( args != null ) {
+			for ( String arg : args ) {
+				try {
+					int i = Integer.parseInt( arg );
+					if ( i < 65536 ) port = i;
+					break;
+				}
+				catch( NumberFormatException nfe ) {} // ignored
+				
+				root = new File( arg );
+			}
+		}
+		
+		try ( HTTPServer server = new HTTPServer() ) {
+			server.setPort( port );
+			server.setHTTPRequestHandler( new SimpleFileServer( root ) );
+			server.start();
+			log.info( "port={}, root={}", port, root );
+			server.thread.join();
+		}
+	}
 }
