@@ -273,4 +273,14 @@ public class TestHTTPResponse {
 		response.setHeader( "asdf", "qwer" );
 		response.getHeaders().put( "zxcv", "dfgh" );
 	}
+	
+	@Test
+	public void testBuildStandardResponseNoMessage() {
+		HTTPResponse response = new HTTPResponse();
+		response.buildStandardResponse( 111, null );
+		Assert.assertEquals( 111, response.status );
+		Assert.assertNull( response.statusMessage );
+		Assert.assertEquals( FileType.HTML.mimeType, response.getHeader( "Content-Type" ) );
+		Assert.assertEquals( "<html><body><h1>111</h1></body></html>", response.getBodyAsString() );
+	}
 }

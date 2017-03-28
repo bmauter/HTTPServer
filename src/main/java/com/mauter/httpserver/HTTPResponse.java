@@ -130,4 +130,30 @@ public class HTTPResponse implements Serializable {
 		if ( this.headers == null ) return null;
 		return Collections.unmodifiableMap( this.headers );
 	}
+	
+	/**
+	 * Changes this response object into a standard response.  For
+	 * example if the caller requests a resource that does not exist
+	 * and you wish to return a 404, call this method on your response
+	 * passing in the status code and message.
+	 * 
+	 * @param status the status code
+	 * @param statusMessage the status message
+	 */
+	public void buildStandardResponse( int status, String statusMessage ) {
+		headers = null;
+		setStatus( status );
+		setStatusMessage( statusMessage );
+		setHeader( "Content-Type", FileType.HTML.mimeType );
+		
+		StringBuilder body = new StringBuilder( 100 );
+		body.append( "<html><body><h1>" );
+		body.append( status );
+		if ( statusMessage != null ) {
+			body.append( " - " ).append( statusMessage );
+		}
+		body.append( "</h1></body></html>" );
+		
+		setBody( body.toString() );
+	}
 }
