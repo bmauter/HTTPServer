@@ -117,6 +117,8 @@ public class HTTPServer implements Runnable, Closeable {
 	 */
 	public static HTTPServer simpleServer( final File root ) throws IOException {
 		if ( root == null ) throw new NullPointerException( "Root directory cannot be null." );
+		if ( !root.exists() ) throw new IOException( "Root directory does not exist." );
+		if ( !root.isDirectory() ) throw new IOException( "Root must be a directory." );
 		
 		final HTTPServer server = new HTTPServer();
 		server.setHTTPRequestHandler( new HTTPRequestHandler() {
