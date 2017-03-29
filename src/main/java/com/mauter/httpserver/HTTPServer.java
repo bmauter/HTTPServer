@@ -242,7 +242,7 @@ public class HTTPServer implements Runnable, Closeable {
 				}
 				else {
 					value = request.getHeader( header );
-					value += line.trim();
+					value += " " + line.trim();
 				}
 			}
 			else {

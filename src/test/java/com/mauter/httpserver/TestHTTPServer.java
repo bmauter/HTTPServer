@@ -314,6 +314,42 @@ public class TestHTTPServer {
 		Assert.assertEquals( new String( body, StandardCharsets.UTF_8 ), request.getBodyAsString() );
 	}
 	
+	@Test
+	public void testReadInputStreamWithMultilineHeader() throws IOException, HTTPException {
+		StringBuilder test = new StringBuilder();
+		test.append( "GET / HTTP/1.0\n" );
+		test.append( "Colors: Red,\n" );
+		test.append( " Blue,       \n" );
+		test.append( "      Yellow\n" );
+		ByteArrayInputStream input = new ByteArrayInputStream( test.toString().getBytes( StandardCharsets.UTF_8  ) );
+		
+		HTTPRequest request = new HTTPRequest();
+		HTTPServer.read( input, request );
+		Assert.assertEquals( "GET", request.getMethod() );
+		Assert.assertEquals( "/", request.getPath() );
+		Assert.assertEquals( "HTTP/1.0", request.getVersion() );
+		Assert.assertEquals( 1, request.getHeaders().size() );
+		Assert.assertEquals( "Red, Blue, Yellow", request.getHeader( "Colors" ) );
+	}
+	
+	@Test
+	public void testReadInputStreamWithMultilineHeaderCRLF() throws IOException, HTTPException {
+		StringBuilder test = new StringBuilder();
+		test.append( "GET / HTTP/1.0\r\n" );
+		test.append( "Colors: Red,\r\n" );
+		test.append( " Blue,       \r\n" );
+		test.append( "      Yellow\r\n" );
+		ByteArrayInputStream input = new ByteArrayInputStream( test.toString().getBytes( StandardCharsets.UTF_8  ) );
+		
+		HTTPRequest request = new HTTPRequest();
+		HTTPServer.read( input, request );
+		Assert.assertEquals( "GET", request.getMethod() );
+		Assert.assertEquals( "/", request.getPath() );
+		Assert.assertEquals( "HTTP/1.0", request.getVersion() );
+		Assert.assertEquals( 1, request.getHeaders().size() );
+		Assert.assertEquals( "Red, Blue, Yellow", request.getHeader( "Colors" ) );
+	}
+	
 	@Test(expected=NullPointerException.class)
 	public void testWriteNull() throws IOException {
 		HTTPServer.write( null, null );
