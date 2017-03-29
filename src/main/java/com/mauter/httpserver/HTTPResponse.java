@@ -140,10 +140,9 @@ public class HTTPResponse implements Serializable {
 	 * Changes this response object into a standard response.  For
 	 * example if the caller requests a resource that does not exist
 	 * and you wish to return a 404, call this method on your response
-	 * passing in the status code and message.
+	 * passing in the status code.
 	 * 
 	 * @param status the status code
-	 * @param statusMessage the status message
 	 */
 	public void buildStandardResponse( int status ) {
 		headers = null;
