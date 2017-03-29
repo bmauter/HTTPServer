@@ -149,7 +149,7 @@ public class TestHTTPServer {
 	@Test
 	public void testGetHTTPRequestHandler() {
 		HTTPRequestHandler handler = new HTTPRequestHandler() {
-			@Override public void handleRequest( HTTPRequest request, HTTPResponse response ) throws IOException {}
+			@Override public void handleRequest( HTTPRequest request, HTTPResponse response ) {}
 		};
 		
 		try ( HTTPServer server = new HTTPServer() ) {
@@ -169,7 +169,7 @@ public class TestHTTPServer {
 	@Test
 	public void testSetHTTPRequestHandler() {
 		HTTPRequestHandler handler = new HTTPRequestHandler() {
-			@Override public void handleRequest( HTTPRequest request, HTTPResponse response ) throws IOException {}
+			@Override public void handleRequest( HTTPRequest request, HTTPResponse response ) {}
 		};
 		
 		try ( HTTPServer server = new HTTPServer() ) {

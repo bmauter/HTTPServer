@@ -98,7 +98,7 @@ public class HTTPServer implements Runnable, Closeable {
 	public static HTTPServer always200OK() throws IOException {
 		HTTPServer server = new HTTPServer();
 		server.setHTTPRequestHandler( new HTTPRequestHandler() {
-			@Override public void handleRequest( HTTPRequest request, HTTPResponse response ) throws IOException {
+			@Override public void handleRequest( HTTPRequest request, HTTPResponse response ) {
 				response.setStatus( 200 );
 			}
 		} );
@@ -195,6 +195,7 @@ public class HTTPServer implements Runnable, Closeable {
 				}
 				catch( IOException ioe ) {
 					response.buildStandardResponse( 500 );
+					log.error( "Unable to read the request.", ioe );
 				}
 				write( os, response );
 			}

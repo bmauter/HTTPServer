@@ -1,7 +1,5 @@
 package com.mauter.httpserver;
 
-import java.io.IOException;
-
 /**
  * Handles HTTP requests.  Implement this class and pass it to
  * {@link HTTPServer#setHTTPRequestHandler(HTTPRequestHandler)} so that
@@ -18,8 +16,7 @@ public interface HTTPRequestHandler {
 	 * @param request the HTTPRequest read from the socket's InputStream
 	 * @param response the HTTPResponse that will be written to the
 	 * socket's OutputStream
-	 * @throws IOException if an I/O error occurs
-	 * @throws HTTPException if an error occurs outside of I/O
+	 * @throws HTTPException if an error occurs while handling the request
 	 */
-	public void handleRequest( HTTPRequest request, HTTPResponse response ) throws IOException, HTTPException;
+	public void handleRequest( HTTPRequest request, HTTPResponse response ) throws HTTPException;
 }
