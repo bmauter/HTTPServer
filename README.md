@@ -27,8 +27,9 @@ try ( HTTPServer server = HTTPServer.always200OK() ) {
 	slack.send();
 	
 	// now assert everything looks like it should
-	Assert.assertFalse( server.getRequests().isEmpty() );
-	Assert.assertTrue( server.getBodyAsString().contains( "Hello world" ) );
+	List<HTTPRequest> requests = server.getRequests();
+	Assert.assertFalse( requests.isEmpty() );
+	Assert.assertTrue( requests.get(0).getBodyAsString().contains( "Hello world" ) );
 	
 	// more asserts
 
