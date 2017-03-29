@@ -240,6 +240,9 @@ public class HTTPServer implements Runnable, Closeable {
 				if ( header == null ) {
 					throw new HTTPException( 400, "Invalid HTTP header." );
 				}
+				else if ( !line.startsWith( " " ) ) {
+					throw new HTTPException( 400, "Invalid HTTP header." );
+				}
 				else {
 					value = request.getHeader( header );
 					value += " " + line.trim();

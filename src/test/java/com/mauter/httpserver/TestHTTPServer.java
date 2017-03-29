@@ -350,6 +350,34 @@ public class TestHTTPServer {
 		Assert.assertEquals( "Red, Blue, Yellow", request.getHeader( "Colors" ) );
 	}
 	
+	@Test(expected=HTTPException.class)
+	public void testReadInputStreamWithBadMultilineHeader() throws IOException, HTTPException {
+		StringBuilder test = new StringBuilder();
+		test.append( "GET / HTTP/1.0\n" );
+		test.append( "Colors: Red,\n" );
+		test.append( "Blue,       \n" ); // note:  multi-line headers must start with a space
+		test.append( "      Yellow\n" );
+		ByteArrayInputStream input = new ByteArrayInputStream( test.toString().getBytes( StandardCharsets.UTF_8  ) );
+		
+		HTTPRequest request = new HTTPRequest();
+		HTTPServer.read( input, request );
+		Assert.fail();
+	}
+	
+	@Test(expected=HTTPException.class)
+	public void testReadInputStreamWithBadMultilineHeaderCRLF() throws IOException, HTTPException {
+		StringBuilder test = new StringBuilder();
+		test.append( "GET / HTTP/1.0\r\n" );
+		test.append( "Colors: Red,\r\n" );
+		test.append( "Blue,       \r\n" ); // note:  multi-line headers must start with a space
+		test.append( "      Yellow\r\n" );
+		ByteArrayInputStream input = new ByteArrayInputStream( test.toString().getBytes( StandardCharsets.UTF_8  ) );
+		
+		HTTPRequest request = new HTTPRequest();
+		HTTPServer.read( input, request );
+		Assert.fail();
+	}
+	
 	@Test(expected=NullPointerException.class)
 	public void testWriteNull() throws IOException {
 		HTTPServer.write( null, null );
