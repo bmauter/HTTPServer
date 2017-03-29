@@ -3,7 +3,6 @@ package com.mauter.httpserver;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -103,19 +102,6 @@ public class HTTPServer implements Runnable, Closeable {
 				response.setStatus( 200 );
 			}
 		} );
-		server.start();
-		return server;
-	}
-	
-	/**
-	 * Creates and starts a server that serves files out of the given root directory.
-	 * 
-	 * @return a new HTTPServer that's already started and listening for requests
-	 * @throws IOException if an I/O error occurs when opening the socket
-	 */
-	public static HTTPServer simpleServer( File root ) throws IOException {
-		HTTPServer server = new HTTPServer();
-		server.setHTTPRequestHandler( new SimpleFileServer( root ) );
 		server.start();
 		return server;
 	}
@@ -330,32 +316,5 @@ public class HTTPServer implements Runnable, Closeable {
 		}
 		
 		os.flush();
-	}
-	
-	public static void main( String[] args ) throws Exception {
-
-		File root = new File( System.getProperty( "user.dir" ) );
-		int port = 0;
-		
-		if ( args != null ) {
-			for ( String arg : args ) {
-				try {
-					int i = Integer.parseInt( arg );
-					if ( i < 65536 ) port = i;
-					break;
-				}
-				catch( NumberFormatException nfe ) {} // ignored
-				
-				root = new File( arg );
-			}
-		}
-		
-		try ( HTTPServer server = new HTTPServer() ) {
-			server.setPort( port );
-			server.setHTTPRequestHandler( new SimpleFileServer( root ) );
-			server.start();
-			log.info( "port={}, root={}", port, root );
-			server.thread.join();
-		}
 	}
 }

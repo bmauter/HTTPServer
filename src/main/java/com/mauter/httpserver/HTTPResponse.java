@@ -148,7 +148,7 @@ public class HTTPResponse implements Serializable {
 	public void buildStandardResponse( int status ) {
 		headers = null;
 		setStatus( status );
-		setHeader( "Content-Type", FileType.HTML.mimeType );
+		setHeader( "Content-Type", "text/html" );
 		
 		StringBuilder body = new StringBuilder( 100 );
 		body.append( "<html><body><h1>" );

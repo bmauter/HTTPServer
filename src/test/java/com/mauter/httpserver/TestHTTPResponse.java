@@ -280,7 +280,7 @@ public class TestHTTPResponse {
 		response.buildStandardResponse( 111 );
 		Assert.assertEquals( 111, response.status );
 		Assert.assertEquals( "111 Message", response.statusMessage );
-		Assert.assertEquals( FileType.HTML.mimeType, response.getHeader( "Content-Type" ) );
+		Assert.assertEquals( "text/html", response.getHeader( "Content-Type" ) );
 		Assert.assertEquals( "<html><body><h1>111 - 111 Message</h1></body></html>", response.getBodyAsString() );
 	}
 }
