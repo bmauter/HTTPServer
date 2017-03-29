@@ -314,4 +314,101 @@ public class TestHTTPServer {
 		Assert.assertEquals( new String( body, StandardCharsets.UTF_8 ), request.getBodyAsString() );
 	}
 	
+	@Test(expected=NullPointerException.class)
+	public void testWriteNull() throws IOException {
+		HTTPServer.write( null, null );
+	}
+	
+	@Test(expected=NullPointerException.class)
+	public void testWriteNullOutputStream() throws IOException {
+		HTTPServer.write( null, new HTTPResponse() );
+	}
+	
+	@Test(expected=NullPointerException.class)
+	public void testWriteNullResponse() throws IOException {
+		HTTPServer.write( new ByteArrayOutputStream(), null );
+	}
+	
+	String testWriteResponse( HTTPResponse response ) throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		HTTPServer.write( baos, response );
+		return baos.toString( StandardCharsets.UTF_8.name() );
+	}
+	
+	@Test
+	public void testWriteBlankResponse() throws IOException {
+		HTTPResponse response = new HTTPResponse();
+		String result = testWriteResponse( response );
+		Assert.assertEquals( "HTTP/1.0 0 null\r\n", result );
+	}
+	
+	@Test
+	public void testWriteSimpleResponse() throws IOException {
+		HTTPResponse response = new HTTPResponse();
+		response.setStatus( 200 );
+		String result = testWriteResponse( response );
+		Assert.assertEquals( "HTTP/1.0 200 OK\r\n", result );
+	}
+	
+	@Test
+	public void testWriteSimpleResponseNonstandardStatusMessage() throws IOException {
+		HTTPResponse response = new HTTPResponse();
+		response.setStatus( 200 );
+		response.setStatusMessage( "asdf" );
+		String result = testWriteResponse( response );
+		Assert.assertEquals( "HTTP/1.0 200 asdf\r\n", result );
+	}
+	
+	@Test
+	public void testWriteSimpleResponseUnplannedStatus() throws IOException {
+		HTTPResponse response = new HTTPResponse();
+		response.setStatus( 111 );
+		String result = testWriteResponse( response );
+		Assert.assertEquals( "HTTP/1.0 111 111 Message\r\n", result );
+	}
+	
+	@Test
+	public void testWriteResponseWithHeaders() throws IOException {
+		HTTPResponse response = new HTTPResponse();
+		response.setStatus( 200 );
+		response.setHeader( "a", "a" );
+		response.setHeader( "b", "b" );
+		response.setHeader( "c", "b" );
+		response.setHeader( "a", "b" );
+		String result = testWriteResponse( response );
+		Assert.assertTrue( result.startsWith( "HTTP/1.0 200 OK\r\n" ) );
+		Assert.assertTrue( result.contains( "a: b\r\n" ) );
+		Assert.assertTrue( result.contains( "b: b\r\n" ) );
+		Assert.assertTrue( result.contains( "c: b\r\n" ) );
+	}
+	
+	@Test
+	public void testWriteResponseWithBody() throws IOException {
+		HTTPResponse response = new HTTPResponse();
+		response.setStatus( 200 );
+		response.setBody( "hello world" );
+		String result = testWriteResponse( response );
+		Assert.assertTrue( result.startsWith( "HTTP/1.0 200 OK\r\n" ) );
+		Assert.assertTrue( result.toLowerCase().contains( "content-length: 11\r\n" ) );
+		Assert.assertTrue( result.contains( "\r\n\r\nhello world" ) );
+	}
+	
+	@Test
+	public void testWriteResponse() throws IOException {
+		HTTPResponse response = new HTTPResponse();
+		response.setStatus( 200 );
+		response.setHeader( "a", "a" );
+		response.setHeader( "b", "b" );
+		response.setHeader( "c", "b" );
+		response.setHeader( "a", "b" );
+		response.setHeader( "content-length", "444" );
+		response.setBody( "hello world" );
+		String result = testWriteResponse( response );
+		Assert.assertTrue( result.startsWith( "HTTP/1.0 200 OK\r\n" ) );
+		Assert.assertTrue( result.contains( "a: b\r\n" ) );
+		Assert.assertTrue( result.contains( "b: b\r\n" ) );
+		Assert.assertTrue( result.contains( "c: b\r\n" ) );
+		Assert.assertTrue( result.toLowerCase().contains( "content-length: 11\r\n" ) );
+		Assert.assertTrue( result.contains( "\r\n\r\nhello world" ) );
+	}
 }
