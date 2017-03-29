@@ -89,3 +89,5 @@ local.properties
 .scala_dependencies
 .worksheet
 
+# Markdown HTML renders
+*.md.html
