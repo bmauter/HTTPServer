@@ -34,11 +34,11 @@ try ( HTTPServer server = HTTPServer.always200OK() ) {
 ```
 ## More Advanced Use
 
-## Concurrency
+### Concurrency
 
 Using TestNG so you can run concurrent tests?  Run as many of these servers as you like simultaneously as long as you have enough memory and ports open (there are 65,535 of them).
 
-## Repeatability
+### Repeatability
 
 Don't want to disturb your coworkers or have to clean up a website after your unit tests run?  Test against this server.  You can even implement the `HTTPRequestHandler` interface so the server responds exactly like you want.
 
