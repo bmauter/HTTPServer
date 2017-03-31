@@ -8,7 +8,7 @@ I wrote a simple SlackNotification class for work, but I had no easy way to test
 
 ## Typical Use
 
-HTTP Server implements `Closeable`. Use a `try-with-resources` statement to keeps things simple and tidy.  After `start()` is called, HTTP server binds to an open port by default  Then call your code to be tested passing in "localhost" and the port that HTTP Server bound to.  After your code under test is finished, you can inspect the requests and responses to make sure things were put together correctly.
+HTTP Server implements `Closeable`. Use a `try-with-resources` statement to keeps things simple and tidy.  After `start()` is called, HTTP server binds to an open port by default.  Then call your code to be tested passing in "localhost" and the port that HTTP Server bound to.  After your code under test is finished, you can inspect the requests and responses to make sure things were put together correctly.
 
 ```java
 @Test
