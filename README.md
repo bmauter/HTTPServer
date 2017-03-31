@@ -45,33 +45,29 @@ Don't want to disturb your coworkers or have to clean up a website after your un
 For example, what if you want to test how your code handles errors from the server?
 
 ```java
-try ( HTTPServer server = new HTTPServer() ) {
+@Test(expected=SlackException.class)
+public void testInvalidSlackToken() throws SlackException {
+	try ( HTTPServer server = new HTTPServer() ) {
+	
+		// make the server tell us that we sent bad data
+		server.setHTTPRequestHandler( new HTTPRequestHandler() {
+			public void handleRequest( HTTPRequest request, HTTPResponse response ) {
+				response.setStatus( 400 );
+			}
+		} );
+		server.start();
+	
+		// call some code you wrote that makes an HTTP call
+		SlackNotification slack = new SlackNotification();
+		slack.setUrl( "http://localhost:" + server.getPort() );
+		slack.setToken( "obviously not a real slack token" );
+		slack.setMessage( "Hello world" );
+		slack.setEmoji( ":tada:" );
+		slack.send(); // expecting a SlackException here
+		
+		Assert.fail();	
 
-	// make the server tell us that we sent bad data
-	server.setHTTPRequestHandler( new HTTPRequestHandler() {
-		public void handleRequest( HTTPRequest request, HTTPResponse response ) {
-			response.setStatus( 400 );
-		}
-	} );
-	server.start();
-
-	// call some code you wrote that makes an HTTP call
-	SlackNotification slack = new SlackNotification();
-	slack.setUrl( "http://localhost:" + server.getPort() );
-	slack.setToken( "obviously not a real slack token" );
-	slack.setMessage( "Hello world" );
-	slack.setEmoji( ":tada:" );
-	
-	// more setup
-	
-	slack.send();
-	
-	// now assert everything looks like it should
-	List<HTTPResponse> responses = server.getResponses();
-	Assert.assertFalse( responses.isEmpty() );
-	Assert.assertEquals( 400, responses.get(0).getStatus() );
-	
-	// more asserts
+	}
 
 }
 ```
