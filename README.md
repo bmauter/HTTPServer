@@ -11,24 +11,27 @@ I wrote a simple SlackNotification class for work, but I had no easy way to test
 HTTP Server implements `Closeable`. Use a `try-with-resources` statement to keeps things simple and tidy.  After `start()` is called, HTTP server binds to an open port by default  Then call your code to be tested passing in "localhost" and the port that HTTP Server bound to.  After your code under test is finished, you can inspect the requests and responses to make sure things were put together correctly.
 
 ```java
-try ( HTTPServer server = HTTPServer.always200OK() ) {
+@Test
+public void testSlackNotification() throws SlackException {
+	try ( HTTPServer server = HTTPServer.always200OK() ) {
 
-	// call some code you wrote that makes an HTTP call
-	SlackNotification slack = new SlackNotification();
-	slack.setUrl( "http://localhost:" + server.getPort() );
-	slack.setMessage( "Hello world" );
-	slack.setEmoji( ":tada:" );
-	
-	// more setup
-	
-	slack.send();
-	
-	// now assert everything looks like it should
-	List<HTTPRequest> requests = server.getRequests();
-	Assert.assertFalse( requests.isEmpty() );
-	Assert.assertTrue( requests.get(0).getBodyAsString().contains( "Hello world" ) );
-	
-	// more asserts
+		// call some code you wrote that makes an HTTP call
+		SlackNotification slack = new SlackNotification();
+		slack.setUrl( "http://localhost:" + server.getPort() );
+		slack.setMessage( "Hello world" );
+		slack.setEmoji( ":tada:" );
+		
+		// more setup
+		
+		slack.send();
+		
+		// now assert everything looks like it should
+		List<HTTPRequest> requests = server.getRequests();
+		Assert.assertFalse( requests.isEmpty() );
+		Assert.assertTrue( requests.get(0).getBodyAsString().contains( "Hello world" ) );
+		
+		// more asserts
+	}
 
 }
 ```
