@@ -1,8 +1,8 @@
+# HTTP Server
+
 [![Build Status](https://travis-ci.org/bmauter/http-server.svg?branch=master)](https://travis-ci.org/bmauter/http-server)
 [![Coverage Status](https://coveralls.io/repos/github/bmauter/http-server/badge.svg?branch=master)](https://coveralls.io/github/bmauter/http-server?branch=master)
 [![Maven Central](http://img.shields.io/maven-central/v/com.mauter/http-server.svg)](https://github.com/bmauter/http-server/releases/latest)
-
-# HTTP Server
 
 HTTP Server is a very simple embeddable HTTP server written in Java with very few dependencies.  Its original intent is to be used in JUnit tests so one can verify that their code properly made HTTP requests and that the request was formatted properly.
 
