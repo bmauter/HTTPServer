@@ -35,6 +35,40 @@ public class TestHTTPException {
 		Assert.assertEquals( "java.lang.Exception", he.getMessage() );
 		Assert.assertEquals( 500, he.getStatus() );
 	}
+	
+	@Test
+	public void testHTTPExceptionStringNullThrowableNull() {
+		HTTPException he = new HTTPException( null, null );
+		Assert.assertNull( he.getCause() );
+		Assert.assertNull( he.getMessage() );
+		Assert.assertEquals( 500, he.getStatus() );
+	}
+	
+	@Test
+	public void testHTTPExceptionStringThrowableNull() {
+		HTTPException he = new HTTPException( "some kind of message", null );
+		Assert.assertNull( he.getCause() );
+		Assert.assertEquals( "some kind of message", he.getMessage() );
+		Assert.assertEquals( 500, he.getStatus() );
+	}
+	
+	@Test
+	public void testHTTPExceptionStringNullThrowable() {
+		Exception e = new Exception();
+		HTTPException he = new HTTPException( null, e );
+		Assert.assertEquals( e, he.getCause() );
+		Assert.assertEquals( "java.lang.Exception", he.getMessage() );
+		Assert.assertEquals( 500, he.getStatus() );
+	}
+	
+	@Test
+	public void testHTTPExceptionStringThrowable() {
+		Exception e = new Exception();
+		HTTPException he = new HTTPException( "some kind of message", e );
+		Assert.assertEquals( e, he.getCause() );
+		Assert.assertEquals( "some kind of message", he.getMessage() );
+		Assert.assertEquals( 500, he.getStatus() );
+	}
 
 	@Test
 	public void testHTTPExceptionIntThrowableNull() {
