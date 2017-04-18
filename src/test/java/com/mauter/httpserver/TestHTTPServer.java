@@ -507,4 +507,26 @@ public class TestHTTPServer {
 		}
 	}
 
+	@Test
+	public void testHandlerThrowsHTTPException() throws IOException {
+		try ( HTTPServer server = new HTTPServer() ) {
+			server.setHTTPRequestHandler( new HTTPRequestHandler() {
+				@Override public void handleRequest( HTTPRequest request, HTTPResponse response ) throws HTTPException {
+					throw new HTTPException( 400, "some kind of message" );
+				}
+			} );
+			server.start();
+			
+			URL url = new URL( "http://localhost:" + server.getPort() );
+			HttpURLConnection con = (HttpURLConnection)url.openConnection();
+			Assert.assertEquals( 400, con.getResponseCode() );
+			
+			try ( InputStream resp = con.getErrorStream() ) {
+				byte[] buffer = new byte[ 100 ];
+				int count = resp.read( buffer, 0, buffer.length );
+				String body = new String( buffer, 0, count, StandardCharsets.UTF_8 );
+				Assert.assertEquals( "<html><body><h1>400 - Bad Request</h1></body></html>", body );
+			}
+		}
+	}
 }
