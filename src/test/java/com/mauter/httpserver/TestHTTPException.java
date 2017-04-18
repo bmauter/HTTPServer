@@ -57,7 +57,7 @@ public class TestHTTPException {
 		Exception e = new Exception();
 		HTTPException he = new HTTPException( null, e );
 		Assert.assertEquals( e, he.getCause() );
-		Assert.assertEquals( "java.lang.Exception", he.getMessage() );
+		Assert.assertEquals( null, he.getMessage() );
 		Assert.assertEquals( 500, he.getStatus() );
 	}
 	
