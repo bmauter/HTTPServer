@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.ServerSocket;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -488,4 +489,22 @@ public class TestHTTPServer {
 		Assert.assertTrue( result.toLowerCase().contains( "content-length: 11\r\n" ) );
 		Assert.assertTrue( result.contains( "\r\n\r\nhello world" ) );
 	}
+
+	@Test
+	public void testStopWithIOException() throws IOException {
+		try ( HTTPServer server = HTTPServer.always200OK() ) {
+			server.serverSocket.close();
+			
+			server.serverSocket = new ServerSocket( 0 ) {
+				@Override
+				public void close() throws IOException {
+					super.close();
+					throw new IOException( "test" );
+				}
+			};
+			
+			server.stop(); // note:  IOException should be logged
+		}
+	}
+
 }
