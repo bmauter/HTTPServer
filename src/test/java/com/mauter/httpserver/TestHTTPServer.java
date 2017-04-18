@@ -351,6 +351,19 @@ public class TestHTTPServer {
 	}
 	
 	@Test(expected=HTTPException.class)
+	public void testReadInputStreamWithUnnamedMultilineHeader() throws IOException, HTTPException {
+		StringBuilder test = new StringBuilder();
+		test.append( "GET / HTTP/1.0\n" );
+		test.append( " Red,\n" ); // note:  headers need to have a "Name: Value" syntax
+		test.append( "      Yellow\n" );
+		ByteArrayInputStream input = new ByteArrayInputStream( test.toString().getBytes( StandardCharsets.UTF_8  ) );
+		
+		HTTPRequest request = new HTTPRequest();
+		HTTPServer.read( input, request );
+		Assert.fail();
+	}
+	
+	@Test(expected=HTTPException.class)
 	public void testReadInputStreamWithBadMultilineHeader() throws IOException, HTTPException {
 		StringBuilder test = new StringBuilder();
 		test.append( "GET / HTTP/1.0\n" );
