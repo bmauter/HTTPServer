@@ -4,11 +4,11 @@
 [![Coverage Status](https://coveralls.io/repos/github/bmauter/http-server/badge.svg?branch=master)](https://coveralls.io/github/bmauter/http-server?branch=master)
 [![Maven Central](http://img.shields.io/maven-central/v/com.mauter/http-server.svg)](https://github.com/bmauter/http-server/releases/latest)
 
-HTTP Server is a very simple embeddable HTTP server written in Java with very few dependencies.  Its original intent is to be used in JUnit tests so one can verify that their code properly made HTTP requests and that the request was formatted properly.
+HTTP Server is a very simple embeddable HTTP server written in Java with very few dependencies.  Its original intent is to be used in JUnit tests so you can verify your code properly made HTTP requests and that the request was formatted properly.
 
 ## Background
 
-I wrote a simple SlackNotification class for work, but I had no easy way to test that it was working properly.  At first, I sent a message on Slack telling everyone I was testing and to ignore the next 50 messages or so.  That works, but a better test wouldn't bother all of my coworkers and could be run as many times as I wanted, preferably when the rest of our stuff is built.
+I wrote a simple SlackNotification class for work, but I had no easy way to test that it was working properly.  At first, I sent a message on Slack telling everyone I was testing and to ignore the next 50 messages or so.  That works, but a better test wouldn't bother all of my coworkers and could be run as many times as I wanted, preferably when the rest of our stuff is built.  Besides, I wanted to make sure my code worked as a unit test.  Actually hitting Slack during testing is more of an integration level test.
 
 ## Typical Use
 
@@ -47,7 +47,11 @@ Using TestNG so you can run concurrent tests?  Run as many of these servers as y
 
 ### Repeatability
 
-Don't want to disturb your coworkers or have to clean up a website after your unit tests run?  Test against this server.  You can even implement the `HTTPRequestHandler` interface so the server responds exactly like you want.
+Don't want to disturb your coworkers or have to clean up a website after your unit tests run?  Test against this server.
+
+### Custom Request Handling
+
+Life isn't always 200 OK.  Eventually something is going to blow up.  Why not test for it?  Implement the `HTTPRequestHandler` interface so your test server responds exactly like you want.
 
 For example, what if you want to test how your code handles errors from the server?
 
