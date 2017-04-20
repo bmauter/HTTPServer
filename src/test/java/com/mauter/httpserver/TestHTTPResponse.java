@@ -1,5 +1,7 @@
 package com.mauter.httpserver;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 
 import org.junit.Assert;
@@ -275,12 +277,52 @@ public class TestHTTPResponse {
 	}
 	
 	@Test
-	public void testBuildStandardResponseNoMessage() {
-		HTTPResponse response = new HTTPResponse();
-		response.buildStandardResponse( 111 );
-		Assert.assertEquals( 111, response.status );
-		Assert.assertEquals( "111 Message", response.statusMessage );
-		Assert.assertEquals( "text/html", response.getHeader( "Content-Type" ) );
-		Assert.assertEquals( "<html><body><h1>111 - 111 Message</h1></body></html>", response.getBodyAsString() );
+	public void testBuildStandardResponse200() {
+		testBuildStandardResponse( 200, "OK", null );
 	}
+	
+	@Test
+	public void testBuildStandardResponse400() {
+		testBuildStandardResponse( 400, "Bad Request", null );
+	}
+	
+	@Test
+	public void testBuildStandardResponse404() {
+		testBuildStandardResponse( 404, "Not Found", null );
+	}
+	
+	@Test
+	public void testBuildStandardResponse500() {
+		testBuildStandardResponse( 500, "Server Error", null );
+	}
+	
+	@Test
+	public void testBuildStandardResponse111() {
+		testBuildStandardResponse( 111, "111 Message", null );
+	}
+	
+	@Test
+	public void testBuildStandardResponseWithException() {
+		testBuildStandardResponse( 400, "Bad Request", new Exception( "hello world" ) );
+	}
+
+	void testBuildStandardResponse( int code, String message, Throwable t ) {
+		HTTPResponse response = new HTTPResponse();
+		response.buildStandardResponse( code, t );
+		Assert.assertEquals( code, response.status );
+		Assert.assertEquals( message, response.statusMessage );
+		Assert.assertEquals( "text/html", response.getHeader( "Content-Type" ) );
+		
+		StringWriter body = new StringWriter( 500 );
+		body.append( "<html><body>" );
+		body.append( "<h1>" ).append( String.valueOf( code ) ).append( " - " ).append( message ).append( "</h1>" );
+		if ( t != null ) {
+			body.append( "<pre>" );
+			t.printStackTrace( new PrintWriter( body, true ) );
+			body.append( "</pre>" );
+		}
+		body.append( "</body></html>" );	
+		Assert.assertEquals( body.toString(), response.getBodyAsString() );
+	}
+	
 }

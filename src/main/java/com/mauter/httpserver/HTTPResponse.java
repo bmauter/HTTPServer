@@ -1,6 +1,8 @@
 package com.mauter.httpserver;
 
+import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
@@ -145,14 +147,32 @@ public class HTTPResponse implements Serializable {
 	 * @param status the status code
 	 */
 	public void buildStandardResponse( int status ) {
+		buildStandardResponse( status, null );
+	}
+	
+	/**
+	 * Changes this response object into a standard response.  For
+	 * example if the caller requests a resource that does not exist
+	 * and you wish to return a 404, call this method on your response
+	 * passing in the status code.
+	 * 
+	 * @param status the status code
+	 * @param t the Throwable to include in the body of the response
+	 */
+	public void buildStandardResponse( int status, Throwable t ) {
 		headers = null;
 		setStatus( status );
 		setHeader( "Content-Type", "text/html" );
 		
-		StringBuilder body = new StringBuilder( 100 );
-		body.append( "<html><body><h1>" );
-		body.append( status ).append( " - " ).append( statusMessage );
-		body.append( "</h1></body></html>" );
+		StringWriter body = new StringWriter( 500 );
+		body.append( "<html><body>" );
+		body.append( "<h1>" ).append( String.valueOf( status ) ).append( " - " ).append( statusMessage ).append( "</h1>" );
+		if ( t != null ) {
+			body.append( "<pre>" );
+			t.printStackTrace( new PrintWriter( body, true ) );
+			body.append( "</pre>" );
+		}
+		body.append( "</body></html>" );
 		
 		setBody( body.toString() );
 	}

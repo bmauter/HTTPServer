@@ -191,10 +191,10 @@ public class HTTPServer implements Runnable, Closeable {
 					this.handler.handleRequest( request, response );
 				}
 				catch( HTTPException he ) {
-					response.buildStandardResponse( he.getStatus() );
+					response.buildStandardResponse( he.getStatus(), he );
 				}
 				catch( IOException ioe ) {
-					response.buildStandardResponse( 500 );
+					response.buildStandardResponse( 500, ioe );
 					log.error( "Unable to read the request.", ioe );
 				}
 				write( os, response );

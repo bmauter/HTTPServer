@@ -522,10 +522,11 @@ public class TestHTTPServer {
 			Assert.assertEquals( 400, con.getResponseCode() );
 			
 			try ( InputStream resp = con.getErrorStream() ) {
-				byte[] buffer = new byte[ 100 ];
+				byte[] buffer = new byte[ 1000 ];
 				int count = resp.read( buffer, 0, buffer.length );
 				String body = new String( buffer, 0, count, StandardCharsets.UTF_8 );
-				Assert.assertEquals( "<html><body><h1>400 - Bad Request</h1></body></html>", body );
+				Assert.assertTrue( body.startsWith( "<html><body><h1>400 - Bad Request</h1><pre>com.mauter.httpserver.HTTPException: some kind of message" ) );
+				Assert.assertTrue( body.endsWith( "</pre></body></html>" ) );
 			}
 		}
 	}
