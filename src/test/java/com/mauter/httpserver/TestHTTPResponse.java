@@ -308,7 +308,8 @@ public class TestHTTPResponse {
 
 	void testBuildStandardResponse( int code, String message, Throwable t ) {
 		HTTPResponse response = new HTTPResponse();
-		response.buildStandardResponse( code, t );
+		if ( t == null ) response.buildStandardResponse( code );
+		else response.buildStandardResponse( code, t );
 		Assert.assertEquals( code, response.status );
 		Assert.assertEquals( message, response.statusMessage );
 		Assert.assertEquals( "text/html", response.getHeader( "Content-Type" ) );
