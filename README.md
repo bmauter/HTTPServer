@@ -56,16 +56,11 @@ Life isn't always 200 OK.  Eventually something is going to blow up.  Why not te
 For example, what if you want to test how your code handles errors from the server?
 
 ```java
-@Test(expected=SlackException.class)
-public void testInvalidSlackToken() throws SlackException {
+void testInvalidSlackToken() throws SlackException {
 	try ( HTTPServer server = new HTTPServer() ) {
 	
 		// make the server tell us that we sent bad data
-		server.setHTTPRequestHandler( new HTTPRequestHandler() {
-			public void handleRequest( HTTPRequest request, HTTPResponse response ) {
-				response.setStatus( 400 );
-			}
-		} );
+		server.setHTTPRequestHandler( (request, response) -> response.setStatus( 400 ) );
 		server.start();
 	
 		// call some code you wrote that makes an HTTP call
@@ -74,10 +69,8 @@ public void testInvalidSlackToken() throws SlackException {
 		slack.setToken( "obviously not a real slack token" );
 		slack.setMessage( "Hello world" );
 		slack.setEmoji( ":tada:" );
-		slack.send(); // expecting a SlackException here
-		
-		Assert.fail();	
 
+		assertThrows( SlackException.class, () -> slack.send() );
 	}
 
 }
