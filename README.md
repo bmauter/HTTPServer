@@ -16,7 +16,7 @@ HTTP Server implements `Closeable`. Use a `try-with-resources` statement to keep
 
 ```java
 @Test
-public void testSlackNotification() throws SlackException {
+void testSlackNotification() throws SlackException {
 	try ( HTTPServer server = HTTPServer.always200OK() ) {
 
 		// call some code you wrote that makes an HTTP call
@@ -56,6 +56,7 @@ Life isn't always 200 OK.  Eventually something is going to blow up.  Why not te
 For example, what if you want to test how your code handles errors from the server?
 
 ```java
+@Test
 void testInvalidSlackToken() {
 	try ( HTTPServer server = new HTTPServer() ) {
 	
