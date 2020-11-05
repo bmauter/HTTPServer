@@ -56,7 +56,7 @@ Life isn't always 200 OK.  Eventually something is going to blow up.  Why not te
 For example, what if you want to test how your code handles errors from the server?
 
 ```java
-void testInvalidSlackToken() throws SlackException {
+void testInvalidSlackToken() {
 	try ( HTTPServer server = new HTTPServer() ) {
 	
 		// make the server tell us that we sent bad data
